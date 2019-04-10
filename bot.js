@@ -10,8 +10,8 @@ var conf = require('./config.json');
 // Configure logger settings
 let logger = winston.createLogger({
     transports: [
-        new (winston.transports.Console)({level: 'debug', colorize: true}),
-        new (winston.transports.File)({ filename: 'console.log' })
+        //new (winston.transports.File)({ filename: 'console.log' }),
+        new (winston.transports.Console)({level: 'debug', colorize: true})
     ]
 });
 
