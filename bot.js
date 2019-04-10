@@ -3,14 +3,16 @@ const fs = require('fs');
 const oneDay = 86400000;                //ms in 24 hrs
 const oneUnit = oneDay;
 var Discord = require('discord.io');
-var logger = require('winston');
+var winston = require('winston');
 var auth = require('./auth.json');
 var conf = require('./config.json');
 
 // Configure logger settings
-logger.remove(logger.transports.Console);
-logger.add(new logger.transports.Console, {
-    colorize: true
+let logger = winston.createLogger({
+    transports: [
+        new (winston.transports.Console)({level: 'debug', colorize: true}),
+        new (winston.transports.File)({ filename: 'console.log' })
+    ]
 });
 
 //data dir setup
@@ -56,7 +58,7 @@ function drink(userID, args, callback) {
     fs.createReadStream(fname).pipe(csv())
         .on('data', function (data) {
             howLongAgo = parseInt(Date.now() - parseInt(data[0]))
-            logger.info(`Drank ${data[1]}oz ${howLongAgo}ms ago`)
+            //logger.info(`Drank ${data[1]}oz ${howLongAgo}ms ago`)
             if (howLongAgo < oneUnit) {
                 dayTotal = dayTotal + parseInt(data[1]);
             }
