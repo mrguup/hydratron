@@ -1,0 +1,14 @@
+{
+    "name": "hydratron",
+    "version": "1.0.0",
+    "description": "STAY HYDRATED IDIOT",
+    "main": "bot.js",
+    "author": "mrguup",
+    "dependencies": {
+        "discord.io" : "https://github.com/woor/discord.io/tarball/gateway_v6",
+	"winston" : "latest",
+        "fast-csv" : "latest"
+    },
+    "repository" : "https://github.com/mrguup/hydratron.git",
+    "license" : "GPL-2.0-only"
+}
