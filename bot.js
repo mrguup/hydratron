@@ -120,6 +120,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                                 exec('forever restart hydratron', (err, stdout, stderr) => {
                                     if (err) {
                                         // node couldn't execute the command
+                                        logger.error("AAAAAAAAAAAAGH")
                                         return;
                                     } 
 
