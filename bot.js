@@ -2,6 +2,8 @@ const csv = require('fast-csv');
 const fs = require('fs');
 const oneDay = 86400000;                //ms in 24 hrs
 const oneUnit = oneDay;
+const git = require('simple-git')('.');
+const { exec } = require('child_process');
 var Discord = require('discord.io');
 var winston = require('winston');
 var auth = require('./auth.json');
@@ -104,6 +106,35 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         }
                     })
                 break;
+                case 'update':
+                    if (conf.admins.includes(user)) {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: "Downloading updates and restarting!"
+                        });
+                        logger.info("Running git pull")
+                        git
+                            .pull()
+                            .then(function() {
+                                logger.info("GOING DOWN!")
+                                exec('forever restart hydratron', (err, stdout, stderr) => {
+                                    if (err) {
+                                        // node couldn't execute the command
+                                        return;
+                                    } 
+
+                                    // the *entire* stdout and stderr (buffered)
+                                    console.log(`stdout: ${stdout}`);
+                                    console.log(`stderr: ${stderr}`);
+                                })
+                            });
+                    } else {
+                        logger.warning(`${user} is trying to get fancy with the bot`);
+                        bot.sendMessage({
+                            to: channelID,
+                            message: "You aren't my real dad!"
+                        });
+                    }
                 // Just add any case commands if you want to..
             }
 	} else {
