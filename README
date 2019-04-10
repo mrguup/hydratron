@@ -1,1 +1,3 @@
 God this thing is ugly but f*** you it works
+
+You'll need to add an auth.json file with a single field named 'token' containing your bot's auth token. Google it if you don't know how to do that.
