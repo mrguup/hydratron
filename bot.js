@@ -127,7 +127,8 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                                     // the *entire* stdout and stderr (buffered)
                                     console.log(`stdout: ${stdout}`);
                                     console.log(`stderr: ${stderr}`);
-                                })
+                                    logger.info("It is finished")
+                                });
                             });
                     } else {
                         logger.warning(`${user} is trying to get fancy with the bot`);
@@ -136,6 +137,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                             message: "You aren't my real dad!"
                         });
                     }
+                break;
                 // Just add any case commands if you want to..
             }
 	} else {
