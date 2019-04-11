@@ -40,9 +40,11 @@ bot.on('ready', function (evt) {
 function drink(userID, args, callback) {
     if (args.length !== 1) {
         callback({ success: false, help: true, message: "Invalid command" })
+        return
     }
     if (isNaN(args[0])) {
         callback({ success: false, help: false, message: "It's gotta be a number in ounces, dingus." })
+        return
     }
 
     var fname = `${datadir}/${userID}.csv`;
@@ -68,8 +70,10 @@ function drink(userID, args, callback) {
         .on('end', function() {
 	    if (args[0] == 0) { 
 		callback({success: true, help: false, message: `Why did you tell me you didn't drink water? \nI'm a hydration bot, not your failure diary. \nYou have consumed ${dayTotal} ounces in the last 24 hours.`})
+                return
 	    } else {
                 callback({success: true, help: false, message: `Delicious! You have consumed ${dayTotal} ounces in the last 24 hours.`})
+                return
 	    }
 	})
 }
