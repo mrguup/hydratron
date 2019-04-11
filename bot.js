@@ -47,10 +47,10 @@ function drink(userID, args, callback) {
         return
     }
 
+    var fname = `${datadir}/${userID}.csv`;
     if (args[0] == 0) {
         logger.info("nope.jpg")
     } else {
-        var fname = `${datadir}/${userID}.csv`;
         var ws = fs.createWriteStream(fname, {flags: 'a'});
         csv
             .write(
