@@ -120,7 +120,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                                 let stdout = execSync('/usr/local/bin/forever restart hydratron');
                             });
                     } else {
-                        logger.warning(`${user} is trying to get fancy with the bot`);
+                        logger.info(`${user} is trying to get fancy with the bot`);
                         bot.sendMessage({
                             to: channelID,
                             message: "You aren't my real dad!"
