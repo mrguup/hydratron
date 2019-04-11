@@ -47,16 +47,18 @@ function drink(userID, args, callback) {
         return
     }
 
-    var fname = `${datadir}/${userID}.csv`;
-    var ws = fs.createWriteStream(fname, {flags: 'a'});
-    csv
-        .write(
-            [
-                [Date.now(),args[0],'testing'], []
-            ],
-            {headers:false}
-        )
-        .pipe(ws);
+    if (parseInt(args[0]) !== 0) {
+        var fname = `${datadir}/${userID}.csv`;
+        var ws = fs.createWriteStream(fname, {flags: 'a'});
+        csv
+            .write(
+                [
+                    [Date.now(),args[0],'testing'], []
+                ],
+                {headers:false}
+            )
+            .pipe(ws);
+    }
 
     var dayTotal = 0;
     fs.createReadStream(fname).pipe(csv())
