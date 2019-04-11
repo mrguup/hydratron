@@ -47,7 +47,7 @@ function drink(userID, args, callback) {
         return
     }
 
-    if (parseInt(args[0]) !== 0) {
+    if (args[0] != 0) {
         var fname = `${datadir}/${userID}.csv`;
         var ws = fs.createWriteStream(fname, {flags: 'a'});
         csv
