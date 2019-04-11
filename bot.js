@@ -117,7 +117,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                             .pull()
                             .then(function() {
                                 logger.info("GOING DOWN!")
-                                let stdout = execSync('forever restart hydratron');
+                                let stdout = execSync('/usr/local/bin/forever restart hydratron');
                             });
                     } else {
                         logger.warning(`${user} is trying to get fancy with the bot`);
