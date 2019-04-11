@@ -53,7 +53,7 @@ function drink(userID, args, callback) {
         csv
             .write(
                 [
-                    [Date.now(),args[0],'testing'], []
+                    [Date.now(),args[0],Date()], []
                 ],
                 {headers:false}
             )
