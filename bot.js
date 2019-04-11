@@ -3,7 +3,7 @@ const fs = require('fs');
 const oneDay = 86400000;                //ms in 24 hrs
 const oneUnit = oneDay;
 const git = require('simple-git')('.');
-const { exec } = require('child_process');
+const { execSync } = require('child_process');
 var Discord = require('discord.io');
 var winston = require('winston');
 var auth = require('./auth.json');
@@ -117,18 +117,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                             .pull()
                             .then(function() {
                                 logger.info("GOING DOWN!")
-                                exec('forever restart hydratron', (err, stdout, stderr) => {
-                                    if (err) {
-                                        // node couldn't execute the command
-                                        logger.error("AAAAAAAAAAAAGH")
-                                        return;
-                                    } 
-
-                                    // the *entire* stdout and stderr (buffered)
-                                    console.log(`stdout: ${stdout}`);
-                                    console.log(`stderr: ${stderr}`);
-                                    logger.info("It is finished")
-                                });
+                                let stdout = execSync('forever restart hydratron');
                             });
                     } else {
                         logger.warning(`${user} is trying to get fancy with the bot`);
