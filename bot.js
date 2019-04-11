@@ -39,10 +39,10 @@ bot.on('ready', function (evt) {
 
 function drink(userID, args, callback) {
     if (args.length !== 1) {
-        return { success: false, help: true, message: "Invalid command" } ;
+        callback({ success: false, help: true, message: "Invalid command" })
     }
     if (isNaN(args[0])) {
-        return { success: false, help: false, message: "It's gotta be a number in ounces, dingus." };
+        callback({ success: false, help: false, message: "It's gotta be a number in ounces, dingus." })
     }
 
     var fname = `${datadir}/${userID}.csv`;
