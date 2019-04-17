@@ -128,41 +128,41 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         }
                     })
                 break;
-                case 'update':
-                    if (conf.admins.includes(user)) {
-                        bot.sendMessage({
-                            to: channelID,
-                            message: "Downloading updates and restarting!"
-                        });
-                        logger.info("Running git pull")
-                        git
-                            .pull()
-                            .then(function() {
-                                logger.info("GOING DOWN!")
-                                let stdout = execSync('/usr/local/bin/forever restart hydratron');
-                            });
-                    } else {
-                        logger.info(`${user} is trying to get fancy with the bot`);
-                        bot.sendMessage({
-                            to: channelID,
-                            message: "You aren't my real dad!"
-                        });
-                    }
-                break;
-                case 'whisper':
-                    bot.sendMessage({
-                        to: userID,
-                        message: `I heard "${args}"`
-                    })
-                break;
                 // Just add any case commands if you want to..
             }
 	} else {
-            logger.info(`user ${user} tried to use the bot wrongly`)
-            bot.sendMessage({
-                to: userID,
-                message: "Talk to me in designated channels, please."
-            })
+            case 'update':
+                if (conf.admins.includes(user)) {
+                    bot.sendMessage({
+                        to: channelID,
+                        message: "Downloading updates and restarting!"
+                    });
+                    logger.info("Running git pull")
+                    git
+                        .pull()
+                        .then(function() {
+                            logger.info("GOING DOWN!")
+                            let stdout = execSync('/usr/local/bin/forever restart hydratron');
+                        });
+                } else {
+                    logger.info(`${user} is trying to get fancy with the bot`);
+                    bot.sendMessage({
+                        to: channelID,
+                        message: "You aren't my real dad!"
+                    });
+                }
+            break;
+            case 'whisper':
+                bot.sendMessage({
+                    to: userID,
+                    message: `I heard "${args}"`
+                })
+            break;
+            //logger.info(`user ${user} tried to use the bot wrongly`)
+            //bot.sendMessage({
+            //    to: userID,
+            //    message: "Talk to me in designated channels, please."
+            //})
         }
      }
 });
