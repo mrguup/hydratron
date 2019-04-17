@@ -8,23 +8,23 @@ var Discord = require('discord.io');
 var winston = require('winston');
 var auth = require('./auth.json');
 var conf = require('./config.json');
+var sql = require('./sql.js')
 
 // Configure logger settings
 let logger = winston.createLogger({
     transports: [
         //new (winston.transports.File)({ filename: 'console.log' }),
-        new (winston.transports.Console)({level: 'debug', colorize: true})
+        new (winston.transports.Console)({level: 'info', colorize: true})
     ]
 });
 
 //data dir setup
 datadir = './data'
 if (!fs.existsSync(datadir)) {
-    logger.info(`Spawning ${datadir} because I couldn't find it`)
+    logger.debug(`Spawning ${datadir} because I couldn't find it`)
     fs.mkdirSync(datadir)
 }
 
-logger.level = 'debug';
 // Initialize Discord Bot
 var bot = new Discord.Client({
    token: auth.token,
@@ -33,8 +33,7 @@ var bot = new Discord.Client({
 
 bot.on('ready', function (evt) {
     logger.info('Connected');
-    logger.info('Logged in as: ');
-    logger.info(bot.username + ' - (' + bot.id + ')');
+    logger.info(`Logged in as: ${bot.username} (${bot.id})`);
 })
 
 function drink(userID, args, callback) {
@@ -100,13 +99,13 @@ function drink(userID, args, callback) {
 bot.on('message', function (user, userID, channelID, message, evt) {
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
-    if (message.substring(0, 1) == '!') {
+    if (message.substring(0, 1) == conf.prefix) {
         var args = message.substring(1).split(' ');
         var cmd = args[0];
        
         args = args.splice(1);
 
-	logger.info(`Caught "${user} in ${channelID} : ${message}"`)
+	logger.debug(`Caught "${user} in ${channelID} : ${message}"`)
 	if (conf.channels.includes(channelID)) { 
             switch(cmd) {
                 case 'parrot':
@@ -149,6 +148,12 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                             message: "You aren't my real dad!"
                         });
                     }
+                break;
+                case 'whisper':
+                    bot.sendMessage({
+                        to: userID,
+                        message: `I heard "${args}"`
+                    })
                 break;
                 // Just add any case commands if you want to..
             }

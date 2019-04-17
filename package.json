@@ -7,7 +7,8 @@
     "dependencies": {
         "discord.io" : "https://github.com/woor/discord.io/tarball/gateway_v6",
 	"winston" : "latest",
-        "fast-csv" : "latest"
+        "fast-csv" : "latest",
+        "mysql" : "latest"
     },
     "repository" : "https://github.com/mrguup/hydratron.git",
     "license" : "GPL-2.0-only"
