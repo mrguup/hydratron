@@ -159,10 +159,10 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             }
 	} else {
             logger.info(`user ${user} tried to use the bot wrongly`)
-            //bot.sendMessage({
-            //    to: channelID,
-            //    message: "Dad says I can't talk in here."
-            //})
+            bot.sendMessage({
+                to: userID,
+                message: "Talk to me in designated channels, please."
+            })
         }
      }
 });
