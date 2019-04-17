@@ -105,7 +105,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
        
         args = args.splice(1);
 
-	logger.info(`Caught "${user} in ${channelID} : ${message}"`)
+	logger.info(`Caught "${user} <${userID}> in ${channelID} : ${message}"`)
 	if (conf.channels.includes(channelID)) { 
             switch(cmd) {
                 case 'parrot':
