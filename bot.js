@@ -109,32 +109,10 @@ bot.on('message', function (user, userID, channelID, message, evt) {
         args = args.splice(1);
 
 	logger.debug(`Caught "${user} <${userID}> in ${channelID} : ${message}"`)
-        console.log(`EVT: ${JSON.stringify(evt,null,2)}`)
-	if (conf.channels.includes(channelID)) { 
-            switch(cmd) {
-                case 'parrot':
-                    bot.sendMessage({
-                        to: channelID,
-                        message: `I heard "${args}"`
-                    });
-                break;
-                case 'drink':
-                    drink(userID, args, function(r) {
-                        bot.sendMessage({
-                            to: channelID,
-                            message: r.message
-                        })
-                        if (r.help) {
-                            bot.sendMessage({
-                                to: channelID,
-                                message: "You must specify an amount. \ni.e. '!drink 64' for 64oz of H2O"
-                            })
-                        }
-                    })
-                break;
-                // Just add any case commands if you want to..
-            }
-	} else {
+        //console.log(`EVT: ${JSON.stringify(evt,null,2)}`)
+
+        //DM
+	if (!evt.d.guild_id) { 
             switch (cmd) {
                 case 'update':
                     if (conf.admins.includes(user)) {
@@ -164,7 +142,33 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     })
                 break;
             }
-            //logger.info(`user ${user} tried to use the bot wrongly`)
+        //channel message
+	} else if (conf.channels.includes(channelID)) {
+            switch(cmd) {
+                case 'parrot':
+                    bot.sendMessage({
+                        to: channelID,
+                        message: `I heard "${args}"`
+                    });
+                break;
+                case 'drink':
+                    drink(userID, args, function(r) {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: r.message
+                        })
+                        if (r.help) {
+                            bot.sendMessage({
+                                to: channelID,
+                                message: "You must specify an amount. \ni.e. '!drink 64' for 64oz of H2O"
+                            })
+                        }
+                    })
+                break;
+                // Just add any case commands if you want to..
+            }
+        } else {
+            logger.info(`user ${user} tried to use the bot wrongly`)
             //bot.sendMessage({
             //    to: userID,
             //    message: "Talk to me in designated channels, please."
