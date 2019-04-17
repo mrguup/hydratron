@@ -85,7 +85,9 @@ function drink(userID, args, callback) {
 		callback({
                     success: true, 
                     help: false, 
-                    message: `Why did you tell me you didn't drink water? \nI'm a hydration bot, not your failure diary. \nYou have consumed ${dayTotal} ounces in the last 24 hours.`
+                    message: "Why did you tell me you didn't drink water? \n" +
+                             "I'm a hydration bot, not your failure diary. \n" +
+                             `You have consumed ${dayTotal} ounces in the last 24 hours.`
                 });
                 return
 	    } else {
