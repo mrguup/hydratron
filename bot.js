@@ -15,7 +15,7 @@ let logger = winston.createLogger({
     transports: [
         //new (winston.transports.File)({ filename: 'console.log' }),
         new (winston.transports.Console)({
-            level: 'debug', 
+            level: 'info', 
             colorize: true
         })
     ]

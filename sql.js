@@ -8,7 +8,10 @@ var winston = require('winston')
 
 let logger = winston.createLogger({
     transports: [
-        new (winston.transports.Console)({level: 'debug', colorize: true})
+        new (winston.transports.Console)({
+            level: 'info', 
+            colorize: true
+        })
     ]
 });
 
