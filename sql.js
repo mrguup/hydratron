@@ -41,7 +41,7 @@ var newDay = function( userID, callback ) {
 };
 
 var addDrink = function ( userID, volume, beverage, callback ) {
-    var today = Date().now()
+    var today = Date.now()
     var qs = "INSERT INTO `drinks`(USERID,VOLUME,BEVERAGE,TIMESTAMP) VALUES ('"+
         userID+"',"+
         volume+",'"+
