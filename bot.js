@@ -60,6 +60,7 @@ function drink(userID, args, callback) {
     var fname = `${datadir}/${userID}.csv`;
     if (args[0] != 0) {
         var ws = fs.createWriteStream(fname, {flags: 'a'});
+        // csv entry
         csv
             .write(
                 [
@@ -69,6 +70,8 @@ function drink(userID, args, callback) {
                 {headers:false}
             )
             .pipe(ws);
+        // sql entry
+        sql.addDrink(userID, args[0], 'water')
     }
 
     var dayTotal = 0;

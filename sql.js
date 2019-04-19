@@ -41,12 +41,12 @@ var newDay = function( userID, callback ) {
 };
 
 var addDrink = function ( userID, volume, beverage, callback ) {
-    var today = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    var today = Date().now()
     var qs = "INSERT INTO `drinks`(USERID,VOLUME,BEVERAGE,TIMESTAMP) VALUES ('"+
         userID+"',"+
         volume+",'"+
-        beverage+"',"+
-        db.escape(today)+
+        beverage+"','"+
+        db.escape(today)+"'"
     ")";
     logger.debug(qs)
     db.query(qs, function (e,r,f) { 
@@ -57,14 +57,14 @@ var addDrink = function ( userID, volume, beverage, callback ) {
     delete today
 };
 
-var todaysDrinks = function ( userID, callback ) {
+var usersDrinks = function ( userID, callback ) {
     var rows = []
     var today = new Date();
     db.query("SELECT TIMESTAMP,VOLUME,BEVERAGE FROM drinks WHERE drinks.USERID='"+userID+"'", function (e,r,f) { 
         if (e) throw e;
         for (let i of r) {
             var _r = {
-                date        : new Date(Date.parse(i.TIMESTAMP)),
+                timestamp   : i.TIMESTAMP,
                 volume      : i.VOLUME,
                 beverage    : i.BEVERAGE
             }
