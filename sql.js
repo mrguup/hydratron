@@ -84,7 +84,7 @@ module.exports = {
     db: db,
     query: query,
     addDrink: addDrink,
-    todaysDrinks: todaysDrinks,
+    usersDrinks: usersDrinks,
     test: test
 }
 
