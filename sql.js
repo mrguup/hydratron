@@ -42,11 +42,11 @@ var newDay = function( userID, callback ) {
 
 var addDrink = function ( userID, volume, beverage, callback ) {
     var today = Date.now()
-    var qs = "INSERT INTO `drinks`(USERID,VOLUME,BEVERAGE,TIMESTAMP) VALUES ('"+
-        userID+"',"+
-        volume+",'"+
-        beverage+"','"+
-        db.escape(today)+"'"
+    var qs = "INSERT INTO `drinks`(USERID,VOLUME,BEVERAGE,TIMESTAMP) VALUES ("+
+        "'"+userID+"',"+
+        volume+","+
+        "'"+beverage+"',"+
+        "'"+db.escape(today)+"'"+
     ")";
     logger.debug(qs)
     db.query(qs, function (e,r,f) { 
