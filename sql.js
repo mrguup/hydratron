@@ -5,6 +5,8 @@ var mysql = require('mysql');
 var auth = require('./auth.json');
 var conf = require('./config.json');
 var winston = require('winston')
+var util = require('util')
+var _ = require('lodash/core');
 
 let logger = winston.createLogger({
     transports: [
@@ -35,7 +37,7 @@ var query = function ( querystring, callback ) {
         rows = res;
         fields = fields;
     }).on('end', function() {
-        callback(rows, fields);
+        callback(null, rows, fields);
     })
 };
 
@@ -54,33 +56,72 @@ var addDrink = function ( userID, volume, beverage, callback ) {
     logger.debug(qs)
     db.query(qs, function (e,r,f) { 
         if (e) throw e; 
-        if (callback) { return callback (r) }
-        else { return r }
+        callback (null, r) 
     });
-    delete today
+    delete today;
+    return r;
 };
 
 var usersDrinks = function ( userID, callback ) {
-    var rows = []
-    var today = new Date();
+    var rows = [];
     db.query("SELECT TIMESTAMP,VOLUME,BEVERAGE FROM drinks WHERE drinks.USERID='"+userID+"'", function (e,r,f) { 
-        if (e) throw e;
+        if (e) callback(e, null);
+        logger.debug(`Collecting data for ${userID}`)
         for (let i of r) {
             var _r = {
                 timestamp   : i.TIMESTAMP,
                 volume      : i.VOLUME,
                 beverage    : i.BEVERAGE
             }
-            rows.push(_r)
-            delete _r
+            logger.debug(_r)
+            rows.push(_r);
+            delete _r;
         }
-        if (callback) callback(rows)
-        else return rows
+        callback(null, rows) 
     });
+    return rows;
+}
+
+var todaysDrinks = function (userID, callback) {
+    var today = new Date(),
+        rows = [];
+    usersDrinks(userID, function (e, drinkList) {
+        if (e) callback(e, null);
+        logger.debug(`Parsing ${JSON.stringify(drinkList)}`)
+        _.forEach(drinkList, function(drink, i) {
+
+            drink.date = new Date( Number(drink.timestamp) );
+            logger.debug(` > Drink : ${JSON.stringify(drink)}`);
+            
+            if (drink.date.getDate() == today.getDate() && 
+                drink.date.getMonth() == today.getMonth() &&
+                drink.date.getYear() == today.getYear()) {
+                // we have a date match, push it
+                rows.push(drink);
+            }
+        });
+        callback(null, rows);
+    });
+    return rows;
+}
+
+var async = {
+    query: util.promisify(query),
+    addDrink: util.promisify(addDrink),
+    usersDrinks: util.promisify(usersDrinks),
+    todaysDrinks: util.promisify(todaysDrinks)
 }
  
-function test() {
-    console.log(addDrink('1234567890',20,'water'))
+async function test() {
+    (async () => {
+        let result;
+        try {
+            result = await async.addDrink('123', 1, 'water')
+        } catch (err) {
+            return console.error(err);
+        }
+        return console.log(result);
+    })();
 }
 
 module.exports = {
@@ -88,6 +129,8 @@ module.exports = {
     query: query,
     addDrink: addDrink,
     usersDrinks: usersDrinks,
-    test: test
+    todaysDrinks: todaysDrinks,
+    test: test,
+    async: async
 }
 
