@@ -58,8 +58,6 @@ var addDrink = function ( userID, volume, beverage, callback ) {
         if (e) throw e; 
         callback (null, r) 
     });
-    delete today;
-    return r;
 };
 
 var usersDrinks = function ( userID, callback ) {
@@ -79,7 +77,6 @@ var usersDrinks = function ( userID, callback ) {
         }
         callback(null, rows) 
     });
-    return rows;
 }
 
 var todaysDrinks = function (userID, callback) {
@@ -102,7 +99,6 @@ var todaysDrinks = function (userID, callback) {
         });
         callback(null, rows);
     });
-    return rows;
 }
 
 var async = {
