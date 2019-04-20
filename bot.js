@@ -112,9 +112,11 @@ function drink(userID, args, callback) {
     } else if (mode === 'sql') {
         (async function (userID, args, callback) {
             // write data
-            await sql.async.addDrink(userID, args[0], 'water')
-                .then(res => logger.debug(`Added entry for ${userID}`))
-                .catch(err => logger.error(JSON.stringify(err)))
+            if (args[0] != 0) {
+                await sql.async.addDrink(userID, args[0], 'water')
+                    .then(res => logger.debug(`Added entry for ${userID}`))
+                    .catch(err => logger.error(JSON.stringify(err)))
+            }
 
             // read and parse data
             sql.todaysDrinks(userID, function (e, r) {
@@ -129,6 +131,7 @@ function drink(userID, args, callback) {
                     var dayTotal = 0;
 
                     _.forEach(r, function (d, i) {
+                        logger.debug(JSON.stringify(d))
                         dayTotal += d.volume;
                     })
 
