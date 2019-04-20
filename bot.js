@@ -112,7 +112,9 @@ function drink(userID, args, callback) {
     } else if (mode === 'sql') {
         (async function (userID, args, callback) {
             // write data
-            await sql.await.addDrink(userID, args[0], 'water')
+            await sql.async.addDrink(userID, args[0], 'water')
+                .then(res => logger.debug(`Added entry for ${userID}`))
+                .catch(err => logger.error(JSON.stringify(err)))
 
             // read and parse data
             sql.todaysDrinks(userID, function (e, r) {
