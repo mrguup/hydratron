@@ -11,7 +11,7 @@ var conf = require('./config.json');
 var sql = require('./sql.js');
 var _ = require('lodash/core');
 
-const mode = 'csv'
+const mode = 'sql'
 
 // Configure logger settings
 let logger = winston.createLogger({
@@ -60,9 +60,13 @@ function drink(userID, args, callback) {
         return
     }
 
-    var fname = `${datadir}/${userID}.csv`;
-    if (args[0] != 0) {
-        if (mode === 'csv') {
+
+    if (mode === 'csv') {
+        var dayTotal = 0,
+            fname = `${datadir}/${userID}.csv`;
+
+        // write data
+        if (args[0] != 0) {
             var ws = fs.createWriteStream(fname, {flags: 'a'});
             // csv entry
             csv
@@ -74,14 +78,9 @@ function drink(userID, args, callback) {
                     {headers:false}
                 )
                 .pipe(ws);
-        } else if (mode === 'sql') {
-            // sql entry
-            sql.addDrink(userID, args[0], 'water')
         }
-    }
 
-    var dayTotal = 0;
-    if (mode === 'csv') {
+        // read and parse data
         fs.createReadStream(fname).pipe(csv())
             .on('data', function (data) {
                 howLongAgo = parseInt(Date.now() - parseInt(data[0]))
@@ -108,40 +107,49 @@ function drink(userID, args, callback) {
                     });
                     return;
                 }
-            })
-    } else if (mode === 'sql') {
-        sql.todaysDrinks(userID, function (e, r) {
-            if (e) {
-                callback({
-                    success: false,
-                    help: false,
-                    message: e
-                });
-                return;
-            } else {
-                _.forEach(r, function (d, i) {
-                    dayTotal += d.volume;
-                })
+            });
 
-                if (args[0] == 0) { 
+    } else if (mode === 'sql') {
+        (async function (userID, args, callback) {
+            // write data
+            await sql.await.addDrink(userID, args[0], 'water')
+
+            // read and parse data
+            sql.todaysDrinks(userID, function (e, r) {
+                if (e) {
                     callback({
-                        success: true, 
-                        help: false, 
-                        message: "Why did you tell me you didn't drink water? \n" +
-                                 "I'm a hydration bot, not your failure diary. \n" +
-                                 `You have consumed ${dayTotal} ounces in the last 24 hours.`
+                        success: false,
+                        help: false,
+                        message: e
                     });
                     return;
                 } else {
-                    callback({
-                        success: true, 
-                        help: false, 
-                        message: `Delicious! You have consumed ${dayTotal} ounces today.`
-                    });
-                    return;
+                    var dayTotal = 0;
+
+                    _.forEach(r, function (d, i) {
+                        dayTotal += d.volume;
+                    })
+
+                    if (args[0] == 0) { 
+                        callback({
+                            success: true, 
+                            help: false, 
+                            message: "Why did you tell me you didn't drink water? \n" +
+                                     "I'm a hydration bot, not your failure diary. \n" +
+                                     `You have consumed ${dayTotal} ounces in the last 24 hours.`
+                        });
+                        return;
+                    } else {
+                        callback({
+                            success: true, 
+                            help: false, 
+                            message: `Delicious! You have consumed ${dayTotal} ounces today.`
+                        });
+                        return;
+                    }
                 }
-            }
-        });
+            });
+        })(userID, args, callback);
     }
 }
 
