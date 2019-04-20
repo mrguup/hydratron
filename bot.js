@@ -76,7 +76,7 @@ function drink(userID, args, callback) {
                 .pipe(ws);
         } else if (mode === 'sql') {
             // sql entry
-            await sql.async.addDrink(userID, args[0], 'water')
+            sql.addDrink(userID, args[0], 'water')
         }
     }
 
