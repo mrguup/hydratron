@@ -41,14 +41,12 @@ var asyncQuery = util.promisify(query);
 
 // internal function for use in 
 var getUserEntry = function ( userID, callback ) {
-    let user = { found: false, id: '0' }
-    db.query("SELECT * FROM users WHERE users.USERID='"+userID+"'", function (e,r,f) {
+    let user = { id: '0' }
+    db.query("SELECT ID,USERNAME FROM users WHERE users.USERID='"+userID+"'", function (e,r,f) {
         if (e) callback(e,null);
 
         if (r.length > 0) {
-            user.found = true;
             user.name = r[0].USERNAME;
-            user.userid = userID;
             user.id = r[0].ID;
         }
         callback(null, user);
@@ -85,7 +83,7 @@ var addDrink = function ( userID, volume, beverage, callback ) {
             "'"+r.id+"'"+
         ")";
 
-        logger.info(qs);
+        logger.debug(qs);
         db.query(qs, function (e,r,f) { 
             if (e) throw e; 
             callback (null, r);
