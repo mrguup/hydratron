@@ -8,7 +8,8 @@
         "discord.io" : "https://github.com/woor/discord.io/tarball/gateway_v6",
 	"winston" : "latest",
         "fast-csv" : "latest",
-        "mysql" : "latest"
+        "mysql" : "latest",
+        "simple-git" : "latest"
     },
     "repository" : "https://github.com/mrguup/hydratron.git",
     "license" : "GPL-2.0-only"

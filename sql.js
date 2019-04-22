@@ -33,30 +33,63 @@ var query = function ( querystring, callback ) {
     var rows = []
     var fields = {}
     db.query(querystring, function (err, res, fields){
-        if (err) throw err;
-        rows = res;
-        fields = fields;
-    }).on('end', function() {
-        callback(null, rows, fields);
+        callback(err, res)
     })
 };
 
-var newDay = function( userID, callback ) {
+var asyncQuery = util.promisify(query);
 
+// internal function for use in 
+var getUserEntry = function ( userID, callback ) {
+    let user = { found: false, id: '0' }
+    db.query("SELECT * FROM users WHERE users.USERID='"+userID+"'", function (e,r,f) {
+        if (e) callback(e,null);
+
+        if (r.length > 0) {
+            user.found = true;
+            user.name = r[0].USERNAME;
+            user.userid = userID;
+            user.id = r[0].ID;
+        }
+        callback(null, user);
+    })
+};
+
+var updateUserEntry = function ( userID, userName, callback ) {
+    db.query("SELECT * FROM users WHERE users.USERID='"+userID+"'", function (e,r,f) {
+        if (e) callback(e,null);
+        if (r.length != 0) {
+            // user exists
+            db.query("UPDATE `users` SET USERNAME='"+userName+"' WHERE USERID='"+userID+"'", function (e,r,f) {
+                callback(e,r);
+            });
+        } else {
+            //user does not exist
+            db.query("INSERT INTO `users`(USERID,USERNAME) VALUES ('"+userID+"','"+userName+"')", function (e,r,f) {
+                callback(e,r);
+            });
+        }
+    });
 };
 
 var addDrink = function ( userID, volume, beverage, callback ) {
-    var today = Date.now()
-    var qs = "INSERT INTO `drinks`(USERID,VOLUME,BEVERAGE,TIMESTAMP) VALUES ("+
-        "'"+userID+"',"+
-        volume+","+
-        "'"+beverage+"',"+
-        "'"+db.escape(today)+"'"+
-    ")";
-    logger.debug(qs)
-    db.query(qs, function (e,r,f) { 
-        if (e) throw e; 
-        callback (null, r) 
+    let today = Date.now()
+    let qs = ""
+    getUserEntry( userID, function (e,r) {
+        if (e) throw e;
+        qs = "INSERT INTO `drinks`(USERID,VOLUME,BEVERAGE,TIMESTAMP,FK_USER_ID) VALUES ("+
+            "'"+userID+"',"+
+            volume+","+
+            "'"+beverage+"',"+
+            "'"+db.escape(today)+"',"+
+            "'"+r.id+"'"+
+        ")";
+
+        logger.info(qs);
+        db.query(qs, function (e,r,f) { 
+            if (e) throw e; 
+            callback (null, r);
+        });
     });
 };
 
@@ -77,7 +110,7 @@ var usersDrinks = function ( userID, callback ) {
         }
         callback(null, rows) 
     });
-}
+};
 
 var todaysDrinks = function (userID, callback) {
     var today = new Date(),
@@ -99,26 +132,29 @@ var todaysDrinks = function (userID, callback) {
         });
         callback(null, rows);
     });
-}
+};
 
 var async = {
-    query: util.promisify(query),
+    query: asyncQuery,
+    updateUserEntry: util.promisify(updateUserEntry),
     addDrink: util.promisify(addDrink),
     usersDrinks: util.promisify(usersDrinks),
     todaysDrinks: util.promisify(todaysDrinks)
-}
+};
  
-async function test() {
-    (async () => {
-        let result;
-        try {
-            result = await async.addDrink('123', 1, 'water')
-        } catch (err) {
-            return console.error(err);
-        }
-        return console.log(result);
-    })();
-}
+function test() {
+    let result = getUserEntry('0')
+    console.log(result)
+    //(async () => {
+    //    let result;
+    //    try {
+    //        result = await asyncQuery('123', console.log);
+    //    } catch (err) {
+    //        return console.error(err);
+    //    }
+    //    return console.log(result);
+    //})();
+};
 
 module.exports = {
     db: db,
@@ -126,7 +162,10 @@ module.exports = {
     addDrink: addDrink,
     usersDrinks: usersDrinks,
     todaysDrinks: todaysDrinks,
+    updateUserEntry: updateUserEntry,
+    getUserEntry: getUserEntry,
+
     test: test,
     async: async
-}
+};
 

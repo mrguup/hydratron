@@ -42,7 +42,7 @@ bot.on('ready', function (evt) {
     logger.info(`Logged in as: ${bot.username} (${bot.id})`);
 })
 
-function drink(userID, args, callback) {
+function drink(userID, userName, args, callback) {
     if (args.length !== 1) {
         callback({ 
             success: false, 
@@ -110,7 +110,12 @@ function drink(userID, args, callback) {
             });
 
     } else if (mode === 'sql') {
-        (async function (userID, args, callback) {
+        (async function (userID, userName, args, callback) {
+            // upsert user to DB
+            await sql.async.updateUserEntry(userID, userName)
+                .then(res => logger.debug(`Updated ${userName} in DB`))
+                .catch(err => logger.error(JSON.stringify(err)))
+
             // write data
             if (args[0] != 0) {
                 await sql.async.addDrink(userID, args[0], 'water')
@@ -154,7 +159,7 @@ function drink(userID, args, callback) {
                     }
                 }
             });
-        })(userID, args, callback);
+        })(userID, userName, args, callback);
     }
 }
 
@@ -211,7 +216,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     });
                 break;
                 case 'drink':
-                    drink(userID, args, function(r) {
+                    drink(userID, user, args, function(r) {
                         bot.sendMessage({
                             to: channelID,
                             message: r.message
