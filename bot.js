@@ -21,7 +21,7 @@ let logger = winston.createLogger({
         new (winston.transports.Console)({
             level: 'debug', 
             colorize: true
-        });
+        })
     ]
 });
 
