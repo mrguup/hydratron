@@ -104,7 +104,13 @@ var addDrink = function ( userID, volume, beverage, callback ) {
 
 var usersDrinks = function ( userID, beverage, callback ) {
     var rows = [];
-    db.query("SELECT TIMESTAMP,VOLUME,BEVERAGE FROM drinks WHERE drinks.USERID='"+userID+"' AND drinks.BEVERAGE='"+beverage+"'", function (e,r,f) { 
+    let qs = ""
+    if (beverage) { 
+        qs = "SELECT TIMESTAMP,VOLUME,BEVERAGE FROM drinks WHERE drinks.USERID='"+userID+"' AND drinks.BEVERAGE='"+beverage+"'";
+    } else {
+        qs = "SELECT TIMESTAMP,VOLUME,BEVERAGE FROM drinks WHERE drinks.USERID='"+userID+"'";
+    }
+    db.query(qs, function (e,r,f) { 
         if (e) callback(e, null);
         logger.debug(`Collecting data for ${userID}`)
         for (let i of r) {
