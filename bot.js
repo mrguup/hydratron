@@ -12,6 +12,7 @@ var sql = require('./sql.js');
 var _ = require('lodash/core');
 
 const mode = 'sql'
+var beverageTypes = {}
 
 // Configure logger settings
 let logger = winston.createLogger({
@@ -20,15 +21,15 @@ let logger = winston.createLogger({
         new (winston.transports.Console)({
             level: 'debug', 
             colorize: true
-        })
+        });
     ]
 });
 
 //data dir setup
 datadir = './data'
 if (!fs.existsSync(datadir)) {
-    logger.debug(`Spawning ${datadir} because I couldn't find it`)
-    fs.mkdirSync(datadir)
+    logger.debug(`Spawning ${datadir} because I couldn't find it`);
+    fs.mkdirSync(datadir);
 }
 
 // Initialize Discord Bot
@@ -40,87 +41,62 @@ var bot = new Discord.Client({
 bot.on('ready', function (evt) {
     logger.info('Connected');
     logger.info(`Logged in as: ${bot.username} (${bot.id})`);
+    (async function () {
+        await sql.async.drinkTypes()
+            .then(data => { beverageTypes = data })
+            .catch(err => { 
+                logger.error("Could not load bevtypes. Defaulting...");
+                beverageTypes = { 'water':'oz' };
+            })
+    });
 })
 
 function drink(userID, userName, args, callback) {
-    if (args.length !== 1) {
-        callback({ 
-            success: false, 
-            help: true, 
-            message: "Invalid command" 
-        });
-        return
-    }
+    //if (args.length !== 1) {
+    //    callback({ 
+    //        success: false, 
+    //        help: true, 
+    //        message: "Invalid command" 
+    //    });
+    //    return
+    //}
     if (isNaN(args[0])) {
         callback({ 
             success: false, 
             help: false, 
-            message: "It's gotta be a number in ounces, dingus." 
+            message: "It's gotta be a number, dingus." 
         });
         return
     }
 
 
-    if (mode === 'csv') {
-        var dayTotal = 0,
-            fname = `${datadir}/${userID}.csv`;
-
-        // write data
-        if (args[0] != 0) {
-            var ws = fs.createWriteStream(fname, {flags: 'a'});
-            // csv entry
-            csv
-                .write(
-                    [
-                        [Date.now(),args[0],Date()], 
-                        []
-                    ],
-                    {headers:false}
-                )
-                .pipe(ws);
-        }
-
-        // read and parse data
-        fs.createReadStream(fname).pipe(csv())
-            .on('data', function (data) {
-                howLongAgo = parseInt(Date.now() - parseInt(data[0]))
-                //logger.info(`Drank ${data[1]}oz ${howLongAgo}ms ago`)
-                if (howLongAgo < oneUnit) {
-                    dayTotal = dayTotal + parseInt(data[1]);
-                }
-            })
-            .on('end', function() {
-                if (args[0] == 0) { 
-                    callback({
-                        success: true, 
-                        help: false, 
-                        message: "Why did you tell me you didn't drink water? \n" +
-                                 "I'm a hydration bot, not your failure diary. \n" +
-                                 `You have consumed ${dayTotal} ounces in the last 24 hours.`
-                    });
-                    return;
-                } else {
-                    callback({
-                        success: true, 
-                        help: false, 
-                        message: `Delicious! You have consumed ${dayTotal} ounces in the last 24 hours.`
-                    });
-                    return;
-                }
-            });
-
-    } else if (mode === 'sql') {
+    if (mode === 'sql') {
         (async function (userID, userName, args, callback) {
+            let beverage = 'water';
+
             // upsert user to DB
             await sql.async.updateUserEntry(userID, userName)
                 .then(res => logger.debug(`Updated ${userName} in DB`))
-                .catch(err => logger.error(JSON.stringify(err)))
+                .catch(err => logger.error(JSON.stringify(err)));
+
+            //extract beverage
+            if (args[1]) {
+                beverage = args[1];
+                if (!beverageTypes[beverage]) {
+                    callback({
+                        success: false,
+                        help: false,
+                        message: `What the hell is ${beverage}, you sick fuck?`
+                    });
+                    return;
+                }
+            }
 
             // write data
             if (args[0] != 0) {
-                await sql.async.addDrink(userID, args[0], 'water')
+                await sql.async.addDrink(userID, args[0], beverage)
                     .then(res => logger.debug(`Added entry for ${userID}`))
-                    .catch(err => logger.error(JSON.stringify(err)))
+                    .catch(err => logger.error(JSON.stringify(err)));
             }
 
             // read and parse data

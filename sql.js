@@ -53,6 +53,17 @@ var getUserEntry = function ( userID, callback ) {
     })
 };
 
+var getDrinkTypes = function(callback) {
+    let rows = {};
+    db.query("SELECT NAME,UNIT FROM drinkTypes", function (e,r,f) {
+        if (e) callback(e,null);
+        for (let i of r) {
+            rows[i.NAME] = i.UNIT;
+        }
+        callback(null, rows);
+    })
+}
+
 var updateUserEntry = function ( userID, userName, callback ) {
     db.query("SELECT * FROM users WHERE users.USERID='"+userID+"'", function (e,r,f) {
         if (e) callback(e,null);
@@ -137,7 +148,8 @@ var async = {
     updateUserEntry: util.promisify(updateUserEntry),
     addDrink: util.promisify(addDrink),
     usersDrinks: util.promisify(usersDrinks),
-    todaysDrinks: util.promisify(todaysDrinks)
+    todaysDrinks: util.promisify(todaysDrinks),
+    drinkTypes: util.promisify(getDrinkTypes)
 };
  
 function test() {
