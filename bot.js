@@ -100,7 +100,7 @@ function drink(userID, userName, args, callback) {
             }
 
             // read and parse data
-            sql.todaysDrinks(userID, function (e, r) {
+            sql.todaysDrinks(userID, beverage, function (e, r) {
                 if (e) {
                     callback({
                         success: false,
@@ -120,16 +120,16 @@ function drink(userID, userName, args, callback) {
                         callback({
                             success: true, 
                             help: false, 
-                            message: "Why did you tell me you didn't drink water? \n" +
-                                     "I'm a hydration bot, not your failure diary. \n" +
-                                     `You have consumed ${dayTotal} ounces in the last 24 hours.`
+                            message: "Why did you tell me you didn't ingest something? \n" +
+                                     "I'm a nutrition bot, not your failure diary. \n" +
+                                     `You have consumed ${dayTotal} ${beverageTypes[beverage]} in the last 24 hours.`
                         });
                         return;
                     } else {
                         callback({
                             success: true, 
                             help: false, 
-                            message: `Delicious! You have consumed ${dayTotal} ounces today.`
+                            message: `Delicious! You have consumed ${dayTotal} ${beverageTypes[beverage]} today.`
                         });
                         return;
                     }
