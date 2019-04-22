@@ -60,12 +60,12 @@ var updateUserEntry = function ( userID, userName, callback ) {
         if (e) callback(e,null);
         if (r.length != 0) {
             // user exists
-            db.query("UPDATE `users` SET USERNAME='"+userName+"',LASTDRINK='"+Date.now()+"' WHERE USERID='"+userID+"'", function (e,r,f) {
+            db.query("UPDATE `users` SET USERNAME='"+userName+"' WHERE USERID='"+userID+"'", function (e,r,f) {
                 callback(e,r);
             });
         } else {
             //user does not exist
-            db.query("INSERT INTO `users`(USERID,USERNAME,LASTDRINK) VALUES ('"+userID+"','"+userName+"','"+Date.now()+"')", function (e,r,f) {
+            db.query("INSERT INTO `users`(USERID,USERNAME) VALUES ('"+userID+"','"+userName+"')", function (e,r,f) {
                 callback(e,r);
             });
         }
