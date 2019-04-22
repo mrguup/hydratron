@@ -43,12 +43,15 @@ bot.on('ready', function (evt) {
     logger.info(`Logged in as: ${bot.username} (${bot.id})`);
     (async function () {
         await sql.async.drinkTypes()
-            .then(data => { beverageTypes = data })
+            .then(data => { 
+                beverageTypes = data;
+                console.log(JSON.stringify(data))
+            })
             .catch(err => { 
                 logger.error("Could not load bevtypes. Defaulting...");
                 beverageTypes = { 'water':'oz' };
             })
-    });
+    })();
 })
 
 function drink(userID, userName, args, callback) {
