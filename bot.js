@@ -213,7 +213,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         }
                         //console.log(usersDrinks)
                         // build string
-                        console.log(date)
+                        //console.log(date)
                         let msgString = `Hello ${user}, on ${date.toDateString()} you drank:`;
                         for (let drinkName in usersDrinks) {
                             msgString += `\n    ${usersDrinks[drinkName]} ${beverageTypes[drinkName]} of ${drinkName}`
