@@ -195,11 +195,11 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 break;
                 case 'report':
                     let date = null,
-                        drink = null,
+                        beverage = null,
                         usersDrinks = {};
                     if (args[0]) { date = new Date(args[0]); }
                     else { date = new Date(); }
-                    drinkReport(userID, drink, date, function (e,r) {
+                    drinkReport(userID, beverage, date, function (e,r) {
                         if (e) {
                             logger.error(e);
                             return;
