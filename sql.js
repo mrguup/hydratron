@@ -128,8 +128,13 @@ var usersDrinks = function ( userID, beverage, callback ) {
 };
 
 var todaysDrinks = function (userID, beverage, callback) {
-    var today = new Date(),
-        rows = [];
+    specificDaysDrinks(userID, beverage, new Date(), function (e, r) {
+        callback(e,r);
+    });
+}
+
+var specificDaysDrinks = function (userID, beverage, date, callback) {
+    var rows = [];
     usersDrinks(userID, beverage, function (e, drinkList) {
         if (e) callback(e, null);
         logger.debug(`Parsing ${JSON.stringify(drinkList)}`)
@@ -138,9 +143,9 @@ var todaysDrinks = function (userID, beverage, callback) {
             drink.date = new Date( Number(drink.timestamp) );
             logger.debug(` > Drink : ${JSON.stringify(drink)}`);
             
-            if (drink.date.getDate() == today.getDate() && 
-                drink.date.getMonth() == today.getMonth() &&
-                drink.date.getYear() == today.getYear()) {
+            if (drink.date.getDate() == date.getDate() && 
+                drink.date.getMonth() == date.getMonth() &&
+                drink.date.getYear() == date.getYear()) {
                 // we have a date match, push it
                 rows.push(drink);
             }
@@ -177,6 +182,7 @@ module.exports = {
     query: query,
     addDrink: addDrink,
     usersDrinks: usersDrinks,
+    specificDaysDrinks: specificDaysDrinks,
     todaysDrinks: todaysDrinks,
     updateUserEntry: updateUserEntry,
     getUserEntry: getUserEntry,

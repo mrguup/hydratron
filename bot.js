@@ -49,11 +49,16 @@ bot.on('ready', function (evt) {
             })
             .catch(err => { 
                 logger.error("Could not load bevtypes. Defaulting...");
-                beverageTypes = { 'water':'oz' };
+                beverageTypes = { 'water': 'oz' };
             })
     })();
 })
 
+/**
+ * @param {string}      userID      discord userID issuing the command
+ * @param {[string]}    args        array of args passed to drink command
+ * @param {function}    callback    standard JS callback taking (error, response)
+ */
 function drink(userID, userName, args, callback) {
     //if (args.length !== 1) {
     //    callback({ 
@@ -64,7 +69,7 @@ function drink(userID, userName, args, callback) {
     //    return
     //}
     if (isNaN(args[0])) {
-        callback({ 
+        callback(null, { 
             success: false, 
             help: false, 
             message: "It's gotta be a number, dingus." 
@@ -80,13 +85,13 @@ function drink(userID, userName, args, callback) {
             // upsert user to DB
             await sql.async.updateUserEntry(userID, userName)
                 .then(res => logger.debug(`Updated ${userName} in DB`))
-                .catch(err => logger.error(JSON.stringify(err)));
+                .catch(err => callback(JSON.stringify(err), null));
 
             //extract beverage
             if (args[1]) {
                 beverage = args[1];
                 if (!beverageTypes[beverage]) {
-                    callback({
+                    callback(null, {
                         success: false,
                         help: false,
                         message: `What the hell is ${beverage}, you sick fuck?`
@@ -99,13 +104,13 @@ function drink(userID, userName, args, callback) {
             if (args[0] != 0) {
                 await sql.async.addDrink(userID, args[0], beverage)
                     .then(res => logger.debug(`Added entry for ${userID}`))
-                    .catch(err => logger.error(JSON.stringify(err)));
+                    .catch(err => callback(JSON.stringify(err), null));
             }
 
             // read and parse data
             sql.todaysDrinks(userID, beverage, function (e, r) {
                 if (e) {
-                    callback({
+                    callback(e, {
                         success: false,
                         help: false,
                         message: e
@@ -120,7 +125,7 @@ function drink(userID, userName, args, callback) {
                     })
 
                     if (args[0] == 0) { 
-                        callback({
+                        callback(null, {
                             success: true, 
                             help: false, 
                             message: "Why did you tell me you didn't ingest something? \n" +
@@ -129,7 +134,7 @@ function drink(userID, userName, args, callback) {
                         });
                         return;
                     } else {
-                        callback({
+                        callback(null, {
                             success: true, 
                             help: false, 
                             message: `Delicious! You have consumed ${dayTotal} ${beverageTypes[beverage]} today.`
@@ -140,6 +145,16 @@ function drink(userID, userName, args, callback) {
             });
         })(userID, userName, args, callback);
     }
+}
+
+/**
+ * @param {string}      userID      discord userID issuing the command
+ * @param {string}      drink       the drink to report on. if null, report all drinks by user 
+ * @param {string}      date        the date to report on. if null, report current date
+ * @param {function}    callback    standard JS callback taking (error, response)
+ */
+function drinkReport(userID, beverage, date, callback) {
+    sql.specificDaysDrinks(userID, beverage, date, callback);
 }
 
 bot.on('message', function (user, userID, channelID, message, evt) {
@@ -155,7 +170,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
         //console.log(`EVT: ${JSON.stringify(evt,null,2)}`)
 
         //DM
-	if (!evt.d.guild_id) { 
+	if (!evt.d.guild_id || conf.channels.includes(channelID)) { 
             switch (cmd) {
                 case 'update':
                     if (conf.admins.includes(user)) {
@@ -178,16 +193,43 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         });
                     }
                 break;
+                case 'report':
+                    let date = null,
+                        drink = null,
+                        usersDrinks = {};
+                    if (args[0]) { date = new Date(args[0]); }
+                    else { date = new Date(); }
+                    drinkReport(userID, drink, date, function (e,r) {
+                        if (e) {
+                            logger.error(e);
+                            return;
+                        }
+
+                        //console.log(r);
+                        for (let i in r) {
+                            let drinkObj = r[i];
+                            if (!usersDrinks[drinkObj.beverage]) { usersDrinks[drinkObj.beverage] = 0; }
+                            usersDrinks[drinkObj.beverage] += drinkObj.volume;
+                        }
+                        //console.log(usersDrinks)
+                        // build string
+                        console.log(date)
+                        let msgString = `Hello ${user}, on ${date.toDateString()} you drank:`;
+                        for (let drinkName in usersDrinks) {
+                            msgString += `\n    ${usersDrinks[drinkName]} ${beverageTypes[drinkName]} of ${drinkName}`
+                        }
+                        bot.sendMessage({
+                            to: channelID,
+                            message: msgString
+                        })
+                    });
+                break;
                 case 'whisper':
                     bot.sendMessage({
                         to: userID,
                         message: `I heard "${args}"`
                     })
                 break;
-            }
-        //channel message
-	} else if (conf.channels.includes(channelID)) {
-            switch(cmd) {
                 case 'parrot':
                     bot.sendMessage({
                         to: channelID,
@@ -195,16 +237,25 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     });
                 break;
                 case 'drink':
-                    drink(userID, user, args, function(r) {
-                        bot.sendMessage({
-                            to: channelID,
-                            message: r.message
-                        })
-                        if (r.help) {
+                    drink(userID, user, args, function(e,r) {
+                        if (e) { 
+                            logger.error(e);
                             bot.sendMessage({
                                 to: channelID,
-                                message: "You must specify an amount. \ni.e. '!drink 64' for 64oz of H2O"
+                                message: "I shidded and farded (something went wrong. Ping the devs angrily.)"
                             })
+                        }
+                        else {
+                            bot.sendMessage({
+                                to: channelID,
+                                message: r.message
+                            })
+                            if (r.help) {
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: "You must specify an amount. \ni.e. '!drink 64' for 64oz of H2O"
+                                })
+                            }
                         }
                     })
                 break;
